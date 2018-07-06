@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Request_Configuration" host="api.openweathermap.org" port="80" doc:name="HTTP Request Configuration"/>
+    <validation:config name="Validation_Configuration" doc:name="Validation Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration1" host="0.0.0.0" port="8089" doc:name="HTTP Listener Configuration"/>
+    <flow name="getWeather">
+        <set-variable doc:name="Variable" value="#[message.inboundProperties.'http.query.params'.City]" variableName="cityName"/>
+        <set-variable variableName="countryName" value="#[message.inboundProperties.'http.query.params'.Country]" doc:name="Variable"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/data/2.5/weather" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:query-param paramName="q" value="#[(flowVars.cityName.concat(&quot;,&quot;)).concat(flowVars.countryName)]"/>
+                <http:query-param paramName="APPID" value="00695a2daecdf0e755b0e53017592366"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Transform Message" metadata:id="3d5de852-65af-4ea8-b0e8-0e43f23fcec4">
+            <dw:input-payload doc:sample="C:\WorkSoftware\AnypointStudio\my api\restservice\weather.json" mimeType="application/json"/>
+            <dw:input-variable doc:sample="sample_data\string.dwl" variableName="cityName"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+"city":flowVars.cityName,
+"country":flowVars.countryName,
+"temperature":payload.main.temp
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

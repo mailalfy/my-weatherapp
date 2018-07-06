@@ -1,0 +1,35 @@
+#%RAML 1.0
+title: weather api
+baseUri: http://localhost:8085/weather
+
+/getweather:
+ get:
+   queryParameters: 
+     City:
+     Country:
+   responses: 
+    200:
+      body: 
+        application/json:
+         example: !include examples/weather.json 
+
+          
+    
+
+     
+
+
+    
+    
+ 
+ 
+  
+   
+    
+      
+    
+      
+    
+  
+      
+
